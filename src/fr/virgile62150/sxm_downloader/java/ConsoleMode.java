@@ -27,6 +27,13 @@ public class ConsoleMode {
 			Radio chosen = null;
 			String chosen_one = "";
 			boolean found = false;
+			
+			// OVERRIDE
+			found = true;
+			chosen = radio_list.get(0);
+			
+			
+			
 			while (!found) {
 				System.out.println("Entrez l'identifiant de votre radio");
 				chosen_one = getConsoleInput();
@@ -49,6 +56,10 @@ public class ConsoleMode {
 			found = false;
 			Music chosen_m = null;
 			
+			// OVERRIDE
+			found = true;
+			chosen_m = music_list.get(0);
+			
 			while (!found) {
 				System.out.println("Entrez l'identifiant de la musique");
 				chosen_one = getConsoleInput();
@@ -61,6 +72,8 @@ public class ConsoleMode {
 			}
 			
 			System.out.println("Musique choisie : "+chosen_m.getArtist()+" - "+chosen_m.getTitle());
+			
+			API.getInstance().getSegmentList(chosen_m);
 			
 			
 		} catch (IOException e) {

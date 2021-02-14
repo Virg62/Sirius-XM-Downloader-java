@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -46,7 +47,7 @@ public class HTTP_Request {
 		    			 System.out.println("jsessid found");
 		    		 } else if (cookie.contains("__tracks__")) {
 		    			 returned.put("__tracks__", cookie);
-		    			 System.out.println("tracks found");
+		    			 System.out.println("tracks found : ");
 		    		 } else if (cookie.contains("SXM-DATA")) {
 		    			 returned.put("SXM-DATA", cookie);
 		    			 System.out.println("sxm-data found");
@@ -63,10 +64,45 @@ public class HTTP_Request {
 		StringBuilder answer = new StringBuilder("");
 		while ((line = reader.readLine()) != null ) {
 			answer.append(line);
+			answer.append("\n");
 		}
 		returned.put("HTTP", answer.toString());
 		reader.close(); input.close(); con.disconnect();
 		
 		return returned;
 	}
+	
+	
+	public static HashMap<String, Object> binaryRequest(String url, String cookies) throws MalformedURLException, IOException {
+		HashMap<String, Object> returned = new HashMap<>();
+		URL cUrl = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) cUrl.openConnection();
+		con.setRequestMethod("GET");
+		if (cookies.length() > 0) {
+			con.setRequestProperty("Cookie", cookies);
+		}
+		con.connect();
+		InputStream is = con.getInputStream();
+		byte[] bytes = new byte[is.available()];
+		is.read(bytes);
+		is.close();
+		con.disconnect();
+		
+		returned.put("HTTP", bytes);
+		
+		return returned;
+	}
+	
+	public static InputStream binaryRequest2(String url, String cookies) throws MalformedURLException, IOException {
+		URL cUrl = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) cUrl.openConnection();
+		con.setRequestMethod("GET");
+		if (cookies.length() > 0) {
+			con.setRequestProperty("Cookie", cookies);
+		}
+		con.connect();
+		InputStream is = con.getInputStream();
+		return is;
+	}
+	
 }

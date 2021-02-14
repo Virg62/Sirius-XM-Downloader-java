@@ -19,6 +19,9 @@ public class API {
 	private static final String INIT_URL = "http://player.siriusxm.com/rest/v2/experience/modules/resume?adsEligible=true&OAtrial=true";
 	private static final String CHAN_URL = "http://player.siriusxm.com/rest/v4/experience/carousels?result-template=everest%7Cweb&page-name=channels_all&function=onlyAdditionalChannels&cacheBuster=1613250514060";
 	private static final String SNGS_URL = "https://player.siriusxm.com/rest/v4/aic/tune?channelGuid=";
+	private static final String AIC_Image = "https://siriusxm-priprodart.akamaized.net";
+	private static final String AIC_Primary_HLS = "https://priprodtracks.mountain.siriusxm.com";
+	
 	
 	private HashMap<String, String> cookies = new HashMap<>();
 	
@@ -93,7 +96,7 @@ public class API {
 		HashMap<String, String> rep = HTTP_Request.Request(SNGS_URL+radio_id, cookieString(), false, "");
 		
 		String tracks_cookie = rep.get("__tracks__");
-		String tracks_val = tracks_cookie.split("=")[1].split(";")[0];
+		String tracks_val = tracks_cookie.split("__tracks__=")[1].split(";")[0];
 		cookies.put("__tracks__", tracks_val);
 		
 		JSONObject jobj = (JSONObject) JSONValue.parse(rep.get("HTTP"));
@@ -109,7 +112,51 @@ public class API {
 		return music_list;
 	}
 	
-	private String cookieString() {
+	
+	public void getSegmentList(Music m) throws MalformedURLException, IOException {
+		String song_url = m.getUrl();
+		song_url = song_url.replace("%AIC_Primary_HLS%", AIC_Primary_HLS);
+		HashMap<String, String> rep = HTTP_Request.Request(song_url, cookieString(), false, "");
+		
+		
+		ArrayList<String> fluxes = M3U8Parser.getInstance().master_parse(rep.get("HTTP"));
+		
+		// Par défaut, on prend la qualité la plus élevée... donc 256k, qui est le premier chx
+		String quality_url = fluxes.get(0);
+		
+		String[] url_elts = song_url.split("/");
+		
+		StringBuilder newUrl = new StringBuilder();
+		
+		for (int i = 0; i<url_elts.length-1; i++) {
+			newUrl.append(url_elts[i]+"/");
+		}
+		
+		 
+		
+		newUrl.append(quality_url);
+		
+		String[] wait = newUrl.toString().split("/");
+		String without_m3u8 = newUrl.toString().replace(wait[wait.length-1], "");
+		
+		rep = HTTP_Request.Request(newUrl.toString(), cookieString(), false, "");
+		
+		ArrayList<String> segs = M3U8Parser.getInstance().master_parse(rep.get("HTTP"));
+		
+		String without_m3u8_4aes=without_m3u8.replace("https://priprodtracks.mountain.siriusxm.com/", "https://player.siriusxm.com/rest/streaming/");
+		
+		Download d = new Download(AES_download(without_m3u8_4aes+"key/4"), segs, m, without_m3u8);
+		d.download_file();
+		
+	}
+	
+	public String AES_download(String url) throws MalformedURLException, IOException {
+		HashMap<String, Object> rep = HTTP_Request.binaryRequest(url, cookieString());
+		byte[] key = (byte[]) rep.get("HTTP");
+		return M3U8Parser.getInstance().bytesToHex(key);
+	}
+	
+	protected String cookieString() {
 		StringBuilder stb = new StringBuilder("");
 		
 		for (Map.Entry<String, String> entry : cookies.entrySet()) {
