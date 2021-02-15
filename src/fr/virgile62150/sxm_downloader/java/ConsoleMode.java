@@ -3,7 +3,14 @@ package fr.virgile62150.sxm_downloader.java;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 import fr.virgile62150.sxm_downloader.java.API.API;
 import fr.virgile62150.sxm_downloader.java.obj.Music;
@@ -29,8 +36,8 @@ public class ConsoleMode {
 			boolean found = false;
 			
 			// OVERRIDE
-			found = true;
-			chosen = radio_list.get(0);
+			//found = true;
+			//chosen = radio_list.get(0);
 			
 			
 			
@@ -57,8 +64,8 @@ public class ConsoleMode {
 			Music chosen_m = null;
 			
 			// OVERRIDE
-			found = true;
-			chosen_m = music_list.get(0);
+			//found = true;
+			//chosen_m = music_list.get(0);
 			
 			while (!found) {
 				System.out.println("Entrez l'identifiant de la musique");
@@ -74,9 +81,9 @@ public class ConsoleMode {
 			System.out.println("Musique choisie : "+chosen_m.getArtist()+" - "+chosen_m.getTitle());
 			
 			API.getInstance().getSegmentList(chosen_m);
+			API.getInstance().getFile();
 			
-			
-		} catch (IOException e) {
+		} catch (IOException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
 			e.printStackTrace();
 		}
 	}

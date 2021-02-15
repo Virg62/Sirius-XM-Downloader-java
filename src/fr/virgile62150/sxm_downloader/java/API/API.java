@@ -3,9 +3,16 @@ package fr.virgile62150.sxm_downloader.java.API;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -21,7 +28,9 @@ public class API {
 	private static final String SNGS_URL = "https://player.siriusxm.com/rest/v4/aic/tune?channelGuid=";
 	private static final String AIC_Image = "https://siriusxm-priprodart.akamaized.net";
 	private static final String AIC_Primary_HLS = "https://priprodtracks.mountain.siriusxm.com";
-	
+	private ArrayList<String> segs;
+	private String without_m3u8;
+	private Music m;
 	
 	private HashMap<String, String> cookies = new HashMap<>();
 	
@@ -113,11 +122,11 @@ public class API {
 	}
 	
 	
-	public void getSegmentList(Music m) throws MalformedURLException, IOException {
+	public void getSegmentList(Music m) throws MalformedURLException, IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
 		String song_url = m.getUrl();
 		song_url = song_url.replace("%AIC_Primary_HLS%", AIC_Primary_HLS);
 		HashMap<String, String> rep = HTTP_Request.Request(song_url, cookieString(), false, "");
-		
+		this.m = m;
 		
 		ArrayList<String> fluxes = M3U8Parser.getInstance().master_parse(rep.get("HTTP"));
 		
@@ -137,23 +146,32 @@ public class API {
 		newUrl.append(quality_url);
 		
 		String[] wait = newUrl.toString().split("/");
-		String without_m3u8 = newUrl.toString().replace(wait[wait.length-1], "");
+		without_m3u8 = newUrl.toString().replace(wait[wait.length-1], "");
 		
 		rep = HTTP_Request.Request(newUrl.toString(), cookieString(), false, "");
 		
-		ArrayList<String> segs = M3U8Parser.getInstance().master_parse(rep.get("HTTP"));
+		segs = M3U8Parser.getInstance().master_parse(rep.get("HTTP"));
 		
+	}
+	
+	public void getFile() throws MalformedURLException, IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
 		String without_m3u8_4aes=without_m3u8.replace("https://priprodtracks.mountain.siriusxm.com/", "https://player.siriusxm.com/rest/streaming/");
 		
-		Download d = new Download(AES_download(without_m3u8_4aes+"key/4"), segs, m, without_m3u8);
+		Download d = new Download(AES_download(without_m3u8_4aes+"key/4"), segs, m, without_m3u8, (AES_download_hex(without_m3u8_4aes+"key/4")));
 		d.download_file();
-		
+		d.CleanTempFile();
 	}
 	
 	public String AES_download(String url) throws MalformedURLException, IOException {
 		HashMap<String, Object> rep = HTTP_Request.binaryRequest(url, cookieString());
 		byte[] key = (byte[]) rep.get("HTTP");
 		return M3U8Parser.getInstance().bytesToHex(key);
+	}
+	
+	public byte[] AES_download_hex(String url) throws MalformedURLException, IOException {
+		HashMap<String, Object> rep = HTTP_Request.binaryRequest(url, cookieString());
+		byte[] key = (byte[]) rep.get("HTTP");
+		return key;
 	}
 	
 	protected String cookieString() {
