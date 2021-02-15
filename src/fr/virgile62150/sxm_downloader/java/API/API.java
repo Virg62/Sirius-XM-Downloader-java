@@ -18,10 +18,11 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+import fr.virgile62150.sxm_downloader.java.jwt.Frame;
 import fr.virgile62150.sxm_downloader.java.obj.Music;
 import fr.virgile62150.sxm_downloader.java.obj.Radio;
 
-public class API {
+public class API implements Runnable {
 	
 	private static final String INIT_URL = "http://player.siriusxm.com/rest/v2/experience/modules/resume?adsEligible=true&OAtrial=true";
 	private static final String CHAN_URL = "http://player.siriusxm.com/rest/v4/experience/carousels?result-template=everest%7Cweb&page-name=channels_all&function=onlyAdditionalChannels&cacheBuster=1613250514060";
@@ -53,10 +54,10 @@ public class API {
 		
 		HashMap<String, String> rep = HTTP_Request.Request(INIT_URL, "", true,data_to_post);
 		
-		for (Map.Entry<String, String> entry : rep.entrySet()) {
+		/*for (Map.Entry<String, String> entry : rep.entrySet()) {
 			//System.out.println(entry.getKey()+" "+entry.getValue());
 		}
-		
+		*/
 	
 		String jsess_cookie = rep.get("JSESSIONID");
 		String jsess_val = jsess_cookie.split("=")[1].split(";")[0];
@@ -121,8 +122,12 @@ public class API {
 		return music_list;
 	}
 	
+	public void choseMusic(Music m) {
+		this.m = m;
+	}
 	
-	public void getSegmentList(Music m) throws MalformedURLException, IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+	
+	public void getSegmentList(Music m) throws MalformedURLException, IOException {
 		String song_url = m.getUrl();
 		song_url = song_url.replace("%AIC_Primary_HLS%", AIC_Primary_HLS);
 		HashMap<String, String> rep = HTTP_Request.Request(song_url, cookieString(), false, "");
@@ -162,6 +167,20 @@ public class API {
 		d.CleanTempFile();
 	}
 	
+	public void getFile_swing() {
+		try {
+			getSegmentList(m);
+			String without_m3u8_4aes=without_m3u8.replace("https://priprodtracks.mountain.siriusxm.com/", "https://player.siriusxm.com/rest/streaming/");
+			
+			Download d = new Download(AES_download(without_m3u8_4aes+"key/4"), segs, m, without_m3u8, (AES_download_hex(without_m3u8_4aes+"key/4")));
+			d.download_file_swing();
+			d.CleanTempFile();
+		} catch (IOException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
+			Frame.getInstance().getPanel().showErrorDialog(e);
+			Frame.getInstance().getPanel().setPBPercentage(1);
+		}
+	}
+	
 	public String AES_download(String url) throws MalformedURLException, IOException {
 		HashMap<String, Object> rep = HTTP_Request.binaryRequest(url, cookieString());
 		byte[] key = (byte[]) rep.get("HTTP");
@@ -181,6 +200,12 @@ public class API {
 			stb.append(entry.getKey()+"="+entry.getValue()+"; ");
 		}
 		return stb.toString();
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		getFile_swing();
 	}
 	
 }

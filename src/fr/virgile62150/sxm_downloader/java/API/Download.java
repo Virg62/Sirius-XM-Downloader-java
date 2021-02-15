@@ -17,6 +17,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import fr.virgile62150.sxm_downloader.java.jwt.Frame;
 import fr.virgile62150.sxm_downloader.java.obj.Music;
 
 public class Download {
@@ -68,6 +69,44 @@ public class Download {
 			
 			
 			System.out.println("File "+current+" : OK");
+			current++;
+		}
+		os.close();
+		System.out.println("Total data recieved : "+totalbyte_rx+" bytes => "+totalbyte_rx/8+" Bytes");
+		System.out.println("AES Key: "+aes_key);
+		
+		return DecryptFile(filename);
+	}
+	
+	public String download_file_swing() throws MalformedURLException, IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+		CheckInstall();
+		String filename = mus.getArtist()+" - "+mus.getTitle()+"_aes128.aac";
+		filename = filename.replace("/","");
+		temp_filename = filename;
+		
+		int current = 1;
+		int totalbyte_rx = 0;
+		// création du fichier temporaire
+		OutputStream os = new FileOutputStream("data/"+filename);
+		
+		for(String part : urls) {
+			// ON AFFICHE SUR LE CLIENT
+			//System.out.println("Downloading "+current+" / "+urls.size());
+			float percent = (float)((float)current/(float)urls.size());
+			
+			
+			
+			byte[] buffer = new byte[8192];
+			int len;
+			InputStream data_from_url = HTTP_Request.binaryRequest2(api_url+part, API.getInstance().cookieString());
+			while ((len = data_from_url.read(buffer)) > 0) {
+		        os.write(buffer, 0, len);
+		        totalbyte_rx+= len;
+			}
+			
+			
+			System.out.println("File "+current+" : OK");
+			Frame.getInstance().getPanel().setPBPercentage(percent);
 			current++;
 		}
 		os.close();

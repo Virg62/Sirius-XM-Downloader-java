@@ -6,13 +6,26 @@ public class Frame extends JFrame {
 	
 	Panel panel;
 
+	static Frame instance;
+	
+	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 3206619785787653691L;
 	
-	public Frame() {
+	public static Frame getInstance() {
+		if (instance == null) instance = new Frame();
+		return instance;
+	}
+	
+	
+	private Frame() {
 		initWindow();
+	}
+	
+	public Panel getPanel() {
+		return panel;
 	}
 	
 	private void initWindow() {

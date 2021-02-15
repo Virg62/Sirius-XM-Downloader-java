@@ -14,25 +14,46 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 
 import fr.virgile62150.sxm_downloader.java.API.API;
+import fr.virgile62150.sxm_downloader.java.obj.Music;
 import fr.virgile62150.sxm_downloader.java.obj.Radio;
 
 public class Panel extends JPanel implements ActionListener{
 
 	private ArrayList<Component> comp_default = new ArrayList<>();
+	private ArrayList<Component> comp_radio = new ArrayList<>();
+	private ArrayList<Component> comp_dl = new ArrayList<>();
+	
 	private ArrayList<Component> was_on_screen = new ArrayList<>();
+	private ArrayList<Component> was_on_screen_radio = new ArrayList<>();
+	
 	JButton load_stations;
+	
 	JLabel statusBarmsg = new JLabel("Bienvenue dans Sirius XM Downloader");
+	
 	HashMap<JButton, String> radio_btn = new HashMap<>();
+	HashMap<JButton, String> music_btn = new HashMap<>();
+	
 	ArrayList<JButton> on_screen = new ArrayList<>();
 	ArrayList<JButton> oos_left = new ArrayList<>();
 	ArrayList<JButton> oos_right = new ArrayList<>();
+	
 	JButton dte;
 	JButton gch;
 	
+	JButton back;
+	JButton back_dl;
 	
+	ArrayList<Radio> radio_list = new ArrayList<>();
+	ArrayList<Music> music_list = new ArrayList<>();
+	
+	Radio r_chosen;
+	Music m_chosen;
+	
+	JProgressBar dl_bar;
 	
 	/**
 	 * 
@@ -44,7 +65,8 @@ public class Panel extends JPanel implements ActionListener{
 		this.setSize(1280,720);
 		initStatusBar();
 		initDefault();
-		
+		initRadio();
+		initDL();
 	}
 	
 	
@@ -69,6 +91,13 @@ public class Panel extends JPanel implements ActionListener{
 		// cache tout 
 		for (Component e : was_on_screen) {
 			e.setVisible(false);
+		}
+	}
+	
+	private void showDefault() {
+		// A executer après hideDefault !!
+		for (Component c : was_on_screen) {
+			c.setVisible(true);
 		}
 	}
 	
@@ -106,6 +135,148 @@ public class Panel extends JPanel implements ActionListener{
 		
 		
 	}
+	
+	private void initRadio() {
+		JLabel info = new JLabel("Liste des titres proposés par la radio : ");
+		info.setBounds(0, 60, this.getWidth(), info.getFont().getSize());
+		
+		comp_radio.add(info);
+		
+		back = new JButton("Retour");
+		back.addActionListener(this);
+		back.setBounds(0, 55+info.getHeight()+10,100,30);
+		comp_radio.add(back);
+		
+		
+		info.setVisible(false);
+		back.setVisible(false);
+		this.add(info);
+		this.add(back);
+		
+	}
+	
+	private void initDL() {
+		JLabel info = new JLabel("Téléchargement de votre titre en cours ...");
+		info.setBounds(0, 60, this.getWidth(), info.getFont().getSize());
+		
+		comp_dl.add(info);
+		
+		back_dl = new JButton("Retour");
+		back_dl.addActionListener(this);
+		back_dl.setBounds(0, 55+info.getHeight()+10,100,30);
+		comp_dl.add(back_dl);
+		
+		dl_bar = new JProgressBar(0,100);
+		
+		dl_bar.setBounds(0, 385-40, this.getWidth(), 40);
+		dl_bar.setStringPainted(true);
+		comp_dl.add(dl_bar);
+		
+		
+		info.setVisible(false);
+		back.setVisible(false);
+		dl_bar.setVisible(false);
+		
+		
+		
+		this.add(info);
+		this.add(back_dl);
+		this.add(dl_bar);
+	}
+	
+	private void hideRadio() {
+		was_on_screen_radio = new ArrayList<>();
+		was_on_screen_radio.addAll(comp_radio);
+		
+		for (Map.Entry<JButton, String> entry : music_btn.entrySet()) {
+			was_on_screen_radio.add(entry.getKey());
+		}
+		
+		for (Component c : was_on_screen_radio) {
+			c.setVisible(false);
+		}
+	}
+	
+	
+	private void reshowRadio() {
+		for (Component c : was_on_screen_radio) {
+			c.setVisible(true);
+		}
+	}
+	
+	private void showRadio(String key) {
+		hideDefault();
+		
+		for (Component c : comp_radio)  {
+			c.setVisible(true);
+		}
+		statusBarmsg.setText("Chargement des titres proposés par la radio en cours...");
+		long start = System.currentTimeMillis();
+		
+		try {
+			music_list = API.getInstance().getTrackList(key);
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			showErrorDialog(e);
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			showErrorDialog(e);
+			e.printStackTrace();
+		}
+		showTracks();
+		long duration = System.currentTimeMillis() - start;
+		
+		statusBarmsg.setText("Titres proposés par la radio "+r_chosen.getName() +" ("+ music_list.size()+" titres chargés en "+duration+" ms.)");
+		
+		
+	}
+	
+	private void showTracks() {
+		int btn_count = 0, total_count= 0;
+		int initial_x = 0, initial_y = 301;
+		for (Music m : music_list) {
+			String full_title = m.getArtist()+" - "+m.getTitle();
+			JButton b = new JButton(full_title);
+			b.setToolTipText(full_title);
+			b.addActionListener(this);
+			music_btn.put(b,m.getUUID());
+			b.setBounds(initial_x, initial_y, 253, 108);
+			
+			initial_x+= 253+2;
+			this.add(b);
+		}
+	}
+	
+	private void showDL() {
+		for (Component c : comp_dl) {
+			c.setVisible(true);
+		}
+		this.repaint();
+		
+		back_dl.setEnabled(false);
+		this.statusBarmsg.setText("Téléchargement de "+m_chosen.getTitle()+" de "+m_chosen.getArtist()+" en cours...");
+		API.getInstance().choseMusic(m_chosen);
+		Thread th = new Thread(API.getInstance());
+		th.start();
+		
+		
+	}
+	
+	public void setPBPercentage(float percent) {
+		dl_bar.setValue((int) (percent*100));
+		if (percent == 1) {
+			back_dl.setEnabled(true);
+			this.statusBarmsg.setText("Téléchargement de "+m_chosen.getTitle()+" de "+m_chosen.getArtist()+" terminé");
+		}
+		this.repaint();
+	}
+	
+	private void hideDL() {
+		for (Component c : comp_dl) {
+			c.setVisible(false);
+		}
+	}
 
 
 	@Override
@@ -116,11 +287,56 @@ public class Panel extends JPanel implements ActionListener{
 			showRight();
 		} else if (e.getSource() == gch) {
 			showLeft();
+		} else if (e.getSource() == back) {
+			hideRadio();
+			showDefault();
+		} else if (e.getSource() == back_dl) {
+			hideDL();
+			reshowRadio();
 		} else {
-			hideDefault();
+			if (!findRadio(e)) {
+				findMusic(e);
+			}
 		}
 		// TODO Auto-generated method stub
 		
+	}
+	
+	private boolean findRadio(ActionEvent e) {
+		for (Map.Entry<JButton, String> entry : radio_btn.entrySet()) {
+			if (entry.getKey() == e.getSource()) {
+				// On la met en mémoire
+				for (Radio r : radio_list) {
+					if (r.getId().equals(entry.getValue())) {
+						r_chosen = r;
+						break;
+					}
+				}
+							
+				showRadio(entry.getValue());
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean findMusic(ActionEvent e) {
+		for (Map.Entry<JButton, String> entry : music_btn.entrySet()) {
+			if (e.getSource() == entry.getKey()) {
+				for (Music m : music_list) {
+					if (m.getUUID().equals(entry.getValue())) {
+						m_chosen = m;
+						break;
+					}
+				}
+				//JOptionPane.showMessageDialog(this, "Musique choisie : "+m_chosen.getArtist()+" - "+m_chosen.getTitle(),"Succès",JOptionPane.INFORMATION_MESSAGE);
+				hideRadio();
+				showDL();
+				
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private void loadRadios() {
@@ -128,7 +344,7 @@ public class Panel extends JPanel implements ActionListener{
 		statusBarmsg.setText("Chargement des radio en cours... Merci de patienter");
 		load_stations.setEnabled(false);
 		try {
-			ArrayList<Radio> radio_list = API.getInstance().getChannels();
+			radio_list = API.getInstance().getChannels();
 			
 			int btn_count = 0, total_count= 0;
 			int initial_x = 0, initial_y = 110;
@@ -296,7 +512,7 @@ public class Panel extends JPanel implements ActionListener{
 	}
 	
 	
-	private void showErrorDialog(Exception e) {
+	public void showErrorDialog(Exception e) {
 		JOptionPane.showMessageDialog(this, "Une erreur est survenue :\n"+e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
 	}
 	
