@@ -27,7 +27,7 @@ public class Download {
 	private String api_url;
 	private String temp_filename;
 	
-	private ArrayList<byte[]> files = new ArrayList<>();
+	//private ArrayList<byte[]> files = new ArrayList<>();
 	
 	public Download(String aes_key, ArrayList<String> urls, Music m, String api_url) {
 		this.aes_key = aes_key;
