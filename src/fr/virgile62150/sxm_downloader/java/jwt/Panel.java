@@ -18,7 +18,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import fr.virgile62150.sxm_downloader.java.API.API;
 import fr.virgile62150.sxm_downloader.java.obj.Music;

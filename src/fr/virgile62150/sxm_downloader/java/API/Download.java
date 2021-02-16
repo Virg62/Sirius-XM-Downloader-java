@@ -167,8 +167,6 @@ public class Download {
 			//System.out.println("Downloading "+current+" / "+urls.size());
 			float percent = (float)((float)current/(float)urls.size());
 			
-			byte[] buffer = new byte[8192];
-			int len;
 			InputStream data_from_url = HTTP_Request.binaryRequest2(api_url+part, API.getInstance().cookieString());
 			
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -229,7 +227,6 @@ public class Download {
 	    attrs.setFormat("wav");
 	    attrs.setAudioAttributes(audio);
 	    Encoder encoder = new Encoder();
-	    ArrayList<String> tmp_aac = new ArrayList<>();
 	    int count = 0;
 	    // On écris tout les fichiers 
 	    String fileuuid = "data/"+UUID.randomUUID();
