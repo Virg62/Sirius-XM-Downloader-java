@@ -34,4 +34,8 @@ public class Music {
 	public String getUUID() {
 		return uuid;
 	}
+	
+	public String toString() {
+		return this.uuid +" : "+this.artist+" - "+this.title+"  | "+this.artwork;
+	}
 }

@@ -293,6 +293,7 @@ public class Panel extends JPanel implements ActionListener{
 	
 	
 	public void startDL() {
+		setBarIndeterminate(false);
 		dl_bar.setValue(0);
 		back_dl.setEnabled(false);
 		download.setEnabled(false);
@@ -306,6 +307,7 @@ public class Panel extends JPanel implements ActionListener{
 	}
 	
 	public void setPBPercentage(float percent) {
+		this.setBarIndeterminate(false);
 		dl_bar.setValue((int) (percent*100));
 		if (percent == 1) {
 			back_dl.setEnabled(true);
@@ -315,6 +317,10 @@ public class Panel extends JPanel implements ActionListener{
 			JOptionPane.showMessageDialog(this, "Succès ! Votre fichier a été téléchargé. Il se trouve dans le dossier que vous avez sélectionné !", "Succès", JOptionPane.INFORMATION_MESSAGE);
 		}
 		this.repaint();
+	}
+	
+	public void setBarIndeterminate(boolean ind) {
+		dl_bar.setIndeterminate(ind);
 	}
 	
 	private void hideDL() {
@@ -573,6 +579,9 @@ public class Panel extends JPanel implements ActionListener{
 		this.repaint();
 	}
 	
+	public void setStatusBarMsg(String s) {
+		statusBarmsg.setText(s);
+	}
 	
 	public void showErrorDialog(Exception e) {
 		JOptionPane.showMessageDialog(this, "Une erreur est survenue :\n"+e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);

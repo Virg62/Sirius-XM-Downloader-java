@@ -35,7 +35,7 @@ public class API implements Runnable {
 	private static final String INIT_URL = "http://player.siriusxm.com/rest/v2/experience/modules/resume?adsEligible=true&OAtrial=true";
 	private static final String CHAN_URL = "http://player.siriusxm.com/rest/v4/experience/carousels?result-template=everest%7Cweb&page-name=channels_all&function=onlyAdditionalChannels&cacheBuster=1613250514060";
 	private static final String SNGS_URL = "https://player.siriusxm.com/rest/v4/aic/tune?channelGuid=";
-	private static final String AIC_Image = "https://siriusxm-priprodart.akamaized.net";
+	public static final String AIC_Image = "https://siriusxm-priprodart.akamaized.net";
 	private static final String AIC_Primary_HLS = "https://priprodtracks.mountain.siriusxm.com";
 	private ArrayList<String> segs;
 	private String without_m3u8;
@@ -209,7 +209,7 @@ public class API implements Runnable {
 		return key;
 	}
 	
-	protected String cookieString() {
+	public String cookieString() {
 		StringBuilder stb = new StringBuilder("");
 		
 		for (Map.Entry<String, String> entry : cookies.entrySet()) {

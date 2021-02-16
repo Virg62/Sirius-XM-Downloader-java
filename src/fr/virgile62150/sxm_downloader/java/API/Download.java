@@ -34,6 +34,8 @@ import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagException;
+import org.jaudiotagger.tag.images.Artwork;
+import org.jaudiotagger.tag.images.ArtworkFactory;
 
 import fr.virgile62150.sxm_downloader.java.jwt.Frame;
 import fr.virgile62150.sxm_downloader.java.obj.Music;
@@ -75,7 +77,8 @@ public class Download {
 	public String download_file() throws MalformedURLException, IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
 		CheckInstall();
 		String filename = mus.getArtist()+" - "+mus.getTitle()+"_aes128.aac";
-		filename = filename.replace("/","");
+		filename = filename.replace("/"," ");
+		filename = filename.replace("?","");
 		temp_filename = filename;
 		
 		int current = 1;
@@ -149,6 +152,7 @@ public class Download {
 	
 	public String download_file_swing_2() throws MalformedURLException, IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, CannotReadException, TagException, ReadOnlyFileException, InvalidAudioFrameException, CannotWriteException, IllegalArgumentException, InputFormatException, EncoderException, UnsupportedAudioFileException {
 		CheckInstall();
+		System.out.println("Going to download : "+mus);
 		String filename = mus.getArtist()+" - "+mus.getTitle()+"_aes128.m4a";
 		filename = filename.replace("/","");
 		temp_filename = filename;
@@ -181,6 +185,8 @@ public class Download {
 			
 			current++;
 		}
+		Frame.getInstance().getPanel().setBarIndeterminate(true);
+		Frame.getInstance().getPanel().setStatusBarMsg("Déchiffrage des données du titre...");
 		//os.close();
 		System.out.println("Total data recieved : "+totalbyte_rx+" Bytes => "+(float)totalbyte_rx/(float)1000+" kBytes");
 		System.out.println("AES Key: "+aes_key);
@@ -189,10 +195,12 @@ public class Download {
 		//
 		DecryptByteArrays();
 		if (this.decrypted_parts.size() == 0) throw new IOException("Impossible de déchiffrer les parties du aac");
+		Frame.getInstance().getPanel().setStatusBarMsg("Conversion du fichier...");
 		aacPartsToOneWav(filename);
+		Frame.getInstance().getPanel().setStatusBarMsg("Ajout des métadonnées au titre");
 		TagFile(filename.replace("_aes128", ""));
 		Frame.getInstance().getPanel().setPBPercentage(1);
-		
+		Frame.getInstance().getPanel().setStatusBarMsg("Téléchargement terminé !");
 		return filename;
 	}
 	
@@ -275,7 +283,6 @@ public class Download {
 	    Encoder enc_aac = new Encoder();
 	    File newfile = new File(path.getPath()+"/"+filename.replace("_aes128",""));
 	    enc_aac.encode(out, newfile, attr_aac);
-	    System.out.println(newfile.getPath()+" "+newfile.exists());
 	    out.delete();
 	    
 	}
@@ -292,8 +299,25 @@ public class Download {
 		Tag tag = f.getTag();
 		tag.setField(FieldKey.ARTIST, mus.getArtist());
 		tag.setField(FieldKey.TITLE, mus.getTitle());
-		f.commit();
 		
+		// Artwork
+		Artwork cover = null;
+		InputStream is = HTTP_Request.binaryRequest2(mus.getArtworkUrl().replace("%AIC_Image%", API.AIC_Image), API.getInstance().cookieString());
+		// on écrit dans un fichier
+		File artwork_jpg = new File("data/"+mus.getUUID()+".jpg");
+		
+		FileOutputStream fos = new FileOutputStream(artwork_jpg);
+		is.transferTo(fos);
+		fos.close();
+		is.close();
+		
+		// url artwork : mus.getArtworkUrl().replace("%AIC_Image%", API.AIC_Image)
+		cover = ArtworkFactory.createArtworkFromFile(artwork_jpg);
+		tag.setField(cover);
+		
+		
+		f.commit();
+		artwork_jpg.delete();
 	}
 	
 	public boolean CleanTempFile() {
