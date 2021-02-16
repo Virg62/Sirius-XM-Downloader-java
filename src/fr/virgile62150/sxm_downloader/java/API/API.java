@@ -1,6 +1,7 @@
 package fr.virgile62150.sxm_downloader.java.API;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.security.InvalidAlgorithmParameterException;
@@ -32,6 +33,8 @@ public class API implements Runnable {
 	private ArrayList<String> segs;
 	private String without_m3u8;
 	private Music m;
+	
+	private File path = new File("data/");
 	
 	private HashMap<String, String> cookies = new HashMap<>();
 	
@@ -173,6 +176,7 @@ public class API implements Runnable {
 			String without_m3u8_4aes=without_m3u8.replace("https://priprodtracks.mountain.siriusxm.com/", "https://player.siriusxm.com/rest/streaming/");
 			
 			Download d = new Download(AES_download(without_m3u8_4aes+"key/4"), segs, m, without_m3u8, (AES_download_hex(without_m3u8_4aes+"key/4")));
+			d.setPath(path);
 			d.download_file_swing();
 			d.CleanTempFile();
 		} catch (IOException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
@@ -180,6 +184,10 @@ public class API implements Runnable {
 			Frame.getInstance().getPanel().showErrorDialog(e);
 			Frame.getInstance().getPanel().setPBPercentage(1);
 		}
+	}
+	
+	public void setPath(File folder) {
+		path = folder;
 	}
 	
 	public String AES_download(String url) throws MalformedURLException, IOException {

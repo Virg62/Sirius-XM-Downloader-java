@@ -27,6 +27,8 @@ public class Download {
 	private Music mus = null;
 	private String api_url;
 	private String temp_filename;
+	private File path = new File("data/");
+	
 	
 	//private ArrayList<byte[]> files = new ArrayList<>();
 	
@@ -110,7 +112,7 @@ public class Download {
 			current++;
 		}
 		os.close();
-		System.out.println("Total data recieved : "+totalbyte_rx+" bytes => "+totalbyte_rx/8+" Bytes");
+		System.out.println("Total data recieved : "+totalbyte_rx+" Bytes => "+(float)totalbyte_rx/(float)1000+" kBytes");
 		System.out.println("AES Key: "+aes_key);
 		
 		return DecryptFile(filename);
@@ -122,7 +124,7 @@ public class Download {
 		
 		byte[] returned = Crypto.getInstance().Decrypt(file, aes_key_bytes);
 		
-		OutputStream os = new FileOutputStream("data/"+filename.replace("_aes128", ""));
+		OutputStream os = new FileOutputStream(path.getPath()+"/"+filename.replace("_aes128", ""));
 		os.write(returned);
 		os.close();
 		
@@ -150,5 +152,9 @@ public class Download {
 		} else {
 			f.mkdir();
 		}
+	}
+
+	public void setPath(File path) {
+		this.path = path;
 	}
 }

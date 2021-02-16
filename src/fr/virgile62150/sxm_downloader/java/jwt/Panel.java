@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -11,11 +12,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import fr.virgile62150.sxm_downloader.java.API.API;
 import fr.virgile62150.sxm_downloader.java.obj.Music;
@@ -29,6 +32,8 @@ public class Panel extends JPanel implements ActionListener{
 	
 	private ArrayList<Component> was_on_screen = new ArrayList<>();
 	private ArrayList<Component> was_on_screen_radio = new ArrayList<>();
+	
+	private File download_folder = new File("data/");
 	
 	JButton load_stations;
 	
@@ -46,6 +51,10 @@ public class Panel extends JPanel implements ActionListener{
 	
 	JButton back;
 	JButton back_dl;
+	
+	JButton change_dl_path;
+	JButton download;
+	JLabel current_path;
 	
 	ArrayList<Radio> radio_list = new ArrayList<>();
 	ArrayList<Music> music_list = new ArrayList<>();
@@ -166,6 +175,23 @@ public class Panel extends JPanel implements ActionListener{
 		back_dl.setBounds(0, 55+info.getHeight()+10,100,30);
 		comp_dl.add(back_dl);
 		
+		change_dl_path = new JButton("Changer");
+		change_dl_path.addActionListener(this);
+		change_dl_path.setBounds(102, 55+info.getHeight()+10, 100, 30);
+		comp_dl.add(change_dl_path);
+		
+		current_path = new JLabel("Dossier de téléchargement : "+download_folder.getPath());
+		current_path.setBounds(204, 55+info.getHeight()+10, this.getWidth()-204, 30);
+		current_path.setVisible(false);
+		comp_dl.add(current_path);
+		
+		download = new JButton("TÉLÉCHARGER");
+		download.setBounds(0, 55+info.getHeight()+10+32, 202, 30);
+		download.setVisible(false);
+		download.addActionListener(this);
+		comp_dl.add(download);
+		
+		
 		dl_bar = new JProgressBar(0,100);
 		
 		dl_bar.setBounds(0, 385-40, this.getWidth(), 40);
@@ -176,12 +202,15 @@ public class Panel extends JPanel implements ActionListener{
 		info.setVisible(false);
 		back.setVisible(false);
 		dl_bar.setVisible(false);
-		
+		change_dl_path.setVisible(false);
 		
 		
 		this.add(info);
 		this.add(back_dl);
 		this.add(dl_bar);
+		this.add(download);
+		this.add(change_dl_path);
+		this.add(current_path);
 	}
 	
 	private void hideRadio() {
@@ -254,13 +283,26 @@ public class Panel extends JPanel implements ActionListener{
 		}
 		this.repaint();
 		
-		back_dl.setEnabled(false);
+		
 		this.statusBarmsg.setText("Téléchargement de "+m_chosen.getTitle()+" de "+m_chosen.getArtist()+" en cours...");
+		/*
+		
+		*/
+		
+	}
+	
+	
+	public void startDL() {
+		dl_bar.setValue(0);
+		back_dl.setEnabled(false);
+		download.setEnabled(false);
+		change_dl_path.setEnabled(false);
+		
 		API.getInstance().choseMusic(m_chosen);
 		Thread th = new Thread(API.getInstance());
 		th.start();
 		
-		
+			
 	}
 	
 	public void setPBPercentage(float percent) {
@@ -268,6 +310,9 @@ public class Panel extends JPanel implements ActionListener{
 		if (percent == 1) {
 			back_dl.setEnabled(true);
 			this.statusBarmsg.setText("Téléchargement de "+m_chosen.getTitle()+" de "+m_chosen.getArtist()+" terminé");
+			download.setEnabled(true);
+			change_dl_path.setEnabled(true);
+			JOptionPane.showMessageDialog(this, "Succès ! Votre fichier a été téléchargé. Il se trouve dans le dossier que vous avez sélectionné !", "Succès", JOptionPane.INFORMATION_MESSAGE);
 		}
 		this.repaint();
 	}
@@ -293,6 +338,10 @@ public class Panel extends JPanel implements ActionListener{
 		} else if (e.getSource() == back_dl) {
 			hideDL();
 			reshowRadio();
+		} else if (e.getSource() == change_dl_path) {
+			chosedlPath();
+		} else if (e.getSource() == download) {
+			startDL();
 		} else {
 			if (!findRadio(e)) {
 				findMusic(e);
@@ -301,6 +350,19 @@ public class Panel extends JPanel implements ActionListener{
 		// TODO Auto-generated method stub
 		
 	}
+	
+	private void chosedlPath() {
+		JFileChooser fc = new JFileChooser();
+		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		int option = fc.showOpenDialog(this);
+		if (option == JFileChooser.APPROVE_OPTION) {
+			download_folder = fc.getSelectedFile();
+			current_path.setText("Dossier de téléchargement : "+download_folder.getPath());
+			System.out.println(download_folder.getPath());
+			API.getInstance().setPath(download_folder);
+		}
+	}
+	
 	
 	private boolean findRadio(ActionEvent e) {
 		for (Map.Entry<JButton, String> entry : radio_btn.entrySet()) {
