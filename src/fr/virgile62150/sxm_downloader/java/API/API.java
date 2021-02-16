@@ -14,7 +14,13 @@ import java.util.Map;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.CannotWriteException;
+import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
+import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.tag.TagException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -22,6 +28,7 @@ import org.json.simple.JSONValue;
 import fr.virgile62150.sxm_downloader.java.jwt.Frame;
 import fr.virgile62150.sxm_downloader.java.obj.Music;
 import fr.virgile62150.sxm_downloader.java.obj.Radio;
+import it.sauronsoftware.jave.EncoderException;
 
 public class API implements Runnable {
 	
@@ -177,9 +184,9 @@ public class API implements Runnable {
 			
 			Download d = new Download(AES_download(without_m3u8_4aes+"key/4"), segs, m, without_m3u8, (AES_download_hex(without_m3u8_4aes+"key/4")));
 			d.setPath(path);
-			d.download_file_swing();
+			d.download_file_swing_2();
 			d.CleanTempFile();
-		} catch (IOException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
+		} catch (IOException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException | CannotReadException | TagException | ReadOnlyFileException | InvalidAudioFrameException | CannotWriteException | IllegalArgumentException | EncoderException | UnsupportedAudioFileException e) {
 			e.printStackTrace();
 			Frame.getInstance().getPanel().showErrorDialog(e);
 			Frame.getInstance().getPanel().setPBPercentage(1);

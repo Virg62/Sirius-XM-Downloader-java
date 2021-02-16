@@ -12,5 +12,10 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="libs/jaudiotagger-2.2.6-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="libs/jave-1.0.2.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/Sirius-XM-Downloader-java/libs/jave.zip!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
