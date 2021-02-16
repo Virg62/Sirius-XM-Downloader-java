@@ -261,7 +261,6 @@ public class Panel extends JPanel implements ActionListener{
 	}
 	
 	private void showTracks() {
-		int btn_count = 0, total_count= 0;
 		int initial_x = 0, initial_y = 301;
 		for (Music m : music_list) {
 			String full_title = m.getArtist()+" - "+m.getTitle();
