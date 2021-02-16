@@ -176,6 +176,7 @@ public class API implements Runnable {
 			d.download_file_swing();
 			d.CleanTempFile();
 		} catch (IOException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
+			e.printStackTrace();
 			Frame.getInstance().getPanel().showErrorDialog(e);
 			Frame.getInstance().getPanel().setPBPercentage(1);
 		}

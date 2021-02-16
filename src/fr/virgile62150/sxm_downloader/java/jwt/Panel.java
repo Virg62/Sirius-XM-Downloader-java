@@ -212,7 +212,7 @@ public class Panel extends JPanel implements ActionListener{
 		}
 		statusBarmsg.setText("Chargement des titres proposés par la radio en cours...");
 		long start = System.currentTimeMillis();
-		
+		music_btn = new HashMap<>();
 		try {
 			music_list = API.getInstance().getTrackList(key);
 		} catch (MalformedURLException e) {
