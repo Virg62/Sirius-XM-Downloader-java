@@ -78,7 +78,7 @@ public class Download {
 		CheckInstall();
 		String filename = mus.getArtist()+" - "+mus.getTitle()+"_aes128.aac";
 		filename = filename.replace("/"," ");
-		filename = filename.replace("?","");
+		filename = filename.replace("?"," ");
 		temp_filename = filename;
 		
 		int current = 1;
@@ -154,7 +154,8 @@ public class Download {
 		CheckInstall();
 		System.out.println("Going to download : "+mus);
 		String filename = mus.getArtist()+" - "+mus.getTitle()+"_aes128.m4a";
-		filename = filename.replace("/","");
+		filename = filename.replace("/"," ");
+		filename = filename.replace("?"," ");
 		temp_filename = filename;
 		
 		int current = 1;
@@ -299,7 +300,10 @@ public class Download {
 		
 		// Artwork
 		Artwork cover = null;
-		InputStream is = HTTP_Request.binaryRequest2(mus.getArtworkUrl().replace("%AIC_Image%", API.AIC_Image), API.getInstance().cookieString());
+		try {
+			InputStream is = HTTP_Request.binaryRequest2(mus.getArtworkUrl().replace("%AIC_Image%", API.AIC_Image), API.getInstance().cookieString());
+		
+		
 		// on écrit dans un fichier
 		File artwork_jpg = new File("data/"+mus.getUUID()+".jpg");
 		
@@ -315,7 +319,11 @@ public class Download {
 		
 		f.commit();
 		artwork_jpg.delete();
-	}
+		} catch (MalformedURLException e) {
+			System.err.println("Impossible de télécharger la pochette.");
+		}
+		
+		}
 	
 	public boolean CleanTempFile() {
 		File temp = new File("data/"+temp_filename);
