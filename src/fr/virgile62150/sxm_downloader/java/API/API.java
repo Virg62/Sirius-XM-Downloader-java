@@ -32,8 +32,8 @@ import it.sauronsoftware.jave.EncoderException;
 
 public class API implements Runnable {
 	
-	private static final String INIT_URL = "http://player.siriusxm.com/rest/v2/experience/modules/resume?adsEligible=true&OAtrial=true";
-	private static final String CHAN_URL = "http://player.siriusxm.com/rest/v4/experience/carousels?result-template=everest%7Cweb&page-name=channels_all&function=onlyAdditionalChannels&cacheBuster=1613250514060";
+	private static final String INIT_URL = "https://player.siriusxm.com/rest/v2/experience/modules/resume?adsEligible=true&OAtrial=true";
+	private static final String CHAN_URL = "https://player.siriusxm.com/rest/v4/experience/carousels?result-template=everest%7Cweb&page-name=channels_all&function=onlyAdditionalChannels&cacheBuster=1613250514060";
 	private static final String SNGS_URL = "https://player.siriusxm.com/rest/v4/aic/tune?channelGuid=";
 	public static final String AIC_Image = "https://siriusxm-priprodart.akamaized.net";
 	private static final String AIC_Primary_HLS = "https://priprodtracks.mountain.siriusxm.com";
@@ -58,7 +58,7 @@ public class API implements Runnable {
 		return instance;
 	}
 	
-	public void init() throws MalformedURLException, IOException {
+	public void init() throws MalformedURLException, IOException, NullPointerException {
 		
 		String data_to_post = "{\"moduleList\":{\"modules\":[{\"moduleRequest\":{\"resultTemplate\":\"web\",\"deviceInfo\":{\"appRegion\":\"US\",\"language\":\"en\",\"browser\":\"Chrome\",\"browserVersion\":\"88.0.4324.150\",\"clientCapabilities\":[\"enhancedEDP\",\"seededRadio\",\"tabSortOrder\",\"zones\",\"cpColorBackground\",\"additionalVideo\",\"podcast\",\"irisPodcast\"],\"clientDeviceId\":null,\"clientDeviceType\":\"web\",\"deviceModel\":\"EverestWebClient\",\"osVersion\":\"Windows\",\"platform\":\"Web\",\"player\":\"html5\",\"sxmAppVersion\":\"5.35.3800\",\"sxmGitHashNumber\":\"96fc08e\",\"sxmTeamCityBuildNumber\":\"3800\",\"isChromeBrowser\":true,\"isMobile\":false,\"isNative\":false,\"supportsAddlChannels\":true,\"supportsVideoSdkAnalytics\":true}}}]}}";
 		
@@ -68,7 +68,6 @@ public class API implements Runnable {
 			//System.out.println(entry.getKey()+" "+entry.getValue());
 		}
 		*/
-	
 		String jsess_cookie = rep.get("JSESSIONID");
 		String jsess_val = jsess_cookie.split("=")[1].split(";")[0];
 		
@@ -78,6 +77,8 @@ public class API implements Runnable {
 		
 		cookies.put("JSESSIONID", jsess_val);
 		cookies.put("SXM-DATA", sxm_dt_val);
+	
+		
 	
 	}
 	

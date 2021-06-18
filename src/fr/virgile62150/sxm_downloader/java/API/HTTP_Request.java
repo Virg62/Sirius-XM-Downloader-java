@@ -36,9 +36,11 @@ public class HTTP_Request {
 		
 		con.connect();
 		
+		
 		for (Entry<String, List<String>> header : con.getHeaderFields().entrySet()) {
 		     //System.out.println(header.getKey() + "=" + header.getValue());
-		     if (header.getKey() != null && header.getKey().equals("Set-Cookie")) {
+			//System.out.println(header.getKey());
+			if (header.getKey() != null && header.getKey().equals("Set-Cookie")) {
 		    	 //System.out.println(header.getValue());
 		    	 for (String cookie : header.getValue()) {
 		    		 if(cookie.contains("JSESSIONID")) {
